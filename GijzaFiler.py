@@ -20,7 +20,8 @@ class ServerAnswer:
 
 
 class Server:
-    def __init__(self, dirname: str, connection_passwords: list):
+    def __init__(self, dirname: str, connection_passwords: list, port: int):
+        self.port = port
         self.dirname: str = dirname
         self.connection_passwords: str = connection_passwords
         self.create()
@@ -67,9 +68,9 @@ class Server:
 
     def create(self):
         soc: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        soc.bind(("0.0.0.0", 5416))
+        soc.bind(("0.0.0.0", self.port))
         soc.listen(1)
-        self.write_log("Started!")
+        self.write_log(f"Server started on port {self.port}")
         while 1:
             try:
                 states = {}
@@ -219,6 +220,15 @@ def starter_menu():
 
 def create_server():
     while 1:
+        port: str = input("Enter port: ")
+        if not port.isdigit():
+            print("Port must be numeric!")
+            continue
+        if int(port) < 22 or int(port) > 65353:
+            print("The port must be in the range: 22-65353")
+            continue
+        break
+    while 1:
         dirname: str = input("Enter directory path: ")
         if not os.path.exists(dirname) or not os.path.isdir(dirname):
             print("Directory not found!")
@@ -230,7 +240,7 @@ def create_server():
         if a == "" or a == " ":
             break
         passwords.append(a)
-    Server(dirname, passwords)
+    Server(dirname, passwords, int(port))
 
 
 def client_recv(soc: socket.socket):
@@ -249,9 +259,18 @@ def client_recv(soc: socket.socket):
 def create_client():
     while 1:
         ip: str = input("Enter ip address: ")
+        splited: list = ip.split(":")
+        port: int = 5416
+        if len(splited) > 1:
+            ip = splited[0]
+            if splited[1].isdigit():
+                if int(port) < 22 or int(port) > 65353:
+                    print("The port must be in the range: 22-65353")
+                else:
+                    port = int(splited[1])
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            soc.connect((ip, 5416))
+            soc.connect((ip, port))
         except:
             print("Server not found!")
             continue
@@ -283,6 +302,8 @@ def create_client():
             print("cd <folder path>")
             print("pwd")
             print("download <folder or file path>")
+            print("disconnect")
+            print("exit")
         elif command == "pwd":
             if current_folder == "":
                 print("Path: .")
@@ -373,6 +394,13 @@ def create_client():
                                 print("Downloaded!")
                             else:
                                 print(rec[1])
+        elif command == "disconnect":
+            soc.close()
+            clear()
+            starter_menu()
+        elif command == "exit":
+            soc.close()
+            os.abort()
         else:
             print("Unknown command")
 
