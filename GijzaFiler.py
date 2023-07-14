@@ -21,7 +21,7 @@ class ServerAnswer:
 
 class Server:
     def __init__(self, dirname: str, connection_passwords: list, port: int):
-        self.port = port
+        self.port: int = port
         self.dirname: str = dirname
         self.connection_passwords: str = connection_passwords
         self.create()
