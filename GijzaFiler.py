@@ -208,7 +208,9 @@ def starter_menu():
         if num < 1 or num > 2:
             print("Invalid number")
             return starter_menu()
-    except:
+    except Exception as ex:
+        if ex is KeyboardInterrupt:
+            return
         print("Invalid number")
         return starter_menu()
 
@@ -271,7 +273,9 @@ def create_client():
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             soc.connect((ip, port))
-        except:
+        except Exception as ex:
+            if ex is KeyboardInterrupt:
+                return
             print("Server not found!")
             continue
         else:
